@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>數位達人</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+  <!-- 導覽列 -->
+  <nav class="bg-white shadow">
+    <div class="px-4 py-4">
+      <div class="flex justify-center">
+        <h1 class="text-xl font-bold text-gray-800">數位達人</h1>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 主要內容 -->
+  <div class="p-4">
+    <!-- 輸入行編區塊 -->
+    <div id="loginSection" class="max-w-md mx-auto bg-white shadow rounded p-6">
+      <h2 class="text-2xl font-bold mb-4 text-center">請輸入您的行編</h2>
+      <form id="loginForm">
+        <div class="mb-4">
+          <label for="employeeId" class="block text-gray-700">行編</label>
+          <input type="text" id="employeeId" placeholder="請輸入您的行編" class="mt-1 block w-full border border-gray-300 rounded p-2" required>
+        </div>
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700">查詢成績</button>
+      </form>
+    </div>
+
+    <!-- 查詢結果區塊 -->
+    <div id="resultSection" class="hidden mt-6">
+      <!-- 成績卡片 -->
+      <div class="bg-white shadow rounded p-6 mb-4">
+        <h2 class="text-2xl font-bold mb-4">您的成績</h2>
+        <div class="space-y-2">
+          <p><strong>行編：</strong><span id="resultEmployeeId"></span></p>
+          <p><strong>星數：</strong><span id="resultStars"></span></p>
+          <p><strong>等級：</strong><span id="resultLevel"></span></p>
+        </div>
+      </div>
+      <!-- 星星明細卡片 -->
+      <div class="bg-white shadow rounded p-6">
+        <h2 class="text-2xl font-bold mb-4">星星明細</h2>
+        <div id="starDetailsList" class="space-y-4">
+          <!-- 每筆星星記錄以卡片方式呈現 -->
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const api = "http://127.0.0.1:5000";
+
+    // 根據星數計算等級（簡單範例，可根據需求調整邏輯）
+    function getLevel(starTotal) {
+      if (starTotal < 50) return "初級";
+      else if (starTotal < 100) return "中級";
+      else return "高級";
+    }
+
+    // 處理行編輸入表單提交
+    document.getElementById("loginForm").addEventListener("submit", async function(e) {
+      e.preventDefault();
+      const employeeId = document.getElementById("employeeId").value.trim();
+      if (!employeeId) return;
+      
+      try {
+        // 取得所有主管資料，並找出與輸入行編相符的主管
+        const supervisorsRes = await fetch(api + '/supervisors');
+        const supervisors = await supervisorsRes.json();
+        const supervisor = supervisors.find(s => s.id === employeeId);
+        if (!supervisor) {
+          alert("查無此行編，請確認後重試。");
+          return;
+        }
+        
+        // 取得所有星星資料，並篩選出該主管且有效的星星記錄（valid !== false）
+        const starsRes = await fetch(api + '/stars');
+        const stars = await starsRes.json();
+        const supervisorStars = stars.filter(star => star.supervisorId === employeeId && star.valid !== false);
+        
+        // 計算總星數
+        const totalStars = supervisorStars.reduce((sum, star) => sum + star.score, 0);
+        
+        // 更新查詢結果：行編、星數、等級
+        document.getElementById("resultEmployeeId").textContent = supervisor.id;
+        document.getElementById("resultStars").textContent = totalStars;
+        document.getElementById("resultLevel").textContent = getLevel(totalStars);
+        
+        // 填入星星明細，依日期排序（由舊至新）
+        const detailsList = document.getElementById("starDetailsList");
+        detailsList.innerHTML = "";
+        supervisorStars.sort((a, b) => new Date(a.date) - new Date(b.date));
+        supervisorStars.forEach((star, index) => {
+          const card = document.createElement("div");
+          card.classList.add("border", "rounded", "p-4", "bg-gray-50");
+          card.innerHTML = `
+            <p class="text-sm"><strong>序號：</strong>${index + 1}</p>
+            <p class="text-sm"><strong>日期：</strong>${new Date(star.date).toLocaleDateString("zh-TW", { timeZone: "Asia/Taipei" })}</p>
+            <p class="text-sm"><strong>分數：</strong>${star.score}</p>
+            <p class="text-sm"><strong>類型：</strong>${star.type}</p>
+          `;
+          detailsList.appendChild(card);
+        });
+        
+        // 顯示查詢結果區塊，隱藏輸入區塊
+        document.getElementById("loginSection").classList.add("hidden");
+        document.getElementById("resultSection").classList.remove("hidden");
+      } catch (error) {
+        console.error("取得資料錯誤:", error);
+        alert("取得資料錯誤，請稍後再試。");
+      }
+    });
+  </script>
+</body>
+</html>
