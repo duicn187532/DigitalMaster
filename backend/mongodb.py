@@ -1,11 +1,16 @@
-
+from dotenv import load_dotenv
 from pymongo.mongo_client import MongoClient
+import os
 # from pymongo.server_api import ServerApi
 
-uri = "mongodb+srv://root:21airr01@mycluster.wk4zgas.mongodb.net/?retryWrites=true&w=majority&appName=MyCluster"
+# 載入 .env 檔案中的環境變數
+load_dotenv()
+
+# 讀取 MongoDB 連接字串
+mongo_uri = os.getenv("MONGO_URI")
 
 # Create a new client and connect to the server
-client = MongoClient(uri)
+client = MongoClient(mongo_uri)
 db = client["DigitalMaster"]
 supervisorCollection = db["supervisor"]
 starCollection = db["star"]
