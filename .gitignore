@@ -1,0 +1,37 @@
+# 忽略所有 .env 檔案
+*.env
+
+# 忽略所有的 log 檔案
+*.log
+
+# 忽略所有的臨時檔案
+*.tmp
+*.bak
+*.swp
+
+# 忽略 node_modules 資料夾（如果你是 Node.js 專案）
+node_modules/
+
+# 忽略編譯後的檔案（如 Java、C/C++ 編譯產物等）
+*.class
+*.o
+*.out
+
+# 忽略 IDE 設定檔（如 VSCode）
+.vscode/
+
+# 忽略 Mac 系統自動生成的檔案
+.DS_Store
+
+# 忽略 Windows 系統自動生成的檔案
+Thumbs.db
+
+# 忽略某些依賴或臨時檔案
+package-lock.json
+yarn.lock
+
+# 忽略 front 資料夾
+front/
+
+# 忽略 user_backend 資料夾
+user_backend/
