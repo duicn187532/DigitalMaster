@@ -36,7 +36,7 @@ const RatingDetail: React.FC = () => {
           .filter((star) => star.valid !== false)
           .map((star) => ({
             ...star,
-            typeName: StarType[star.type]?.name || star.type,
+            typeName: StarType[star.type].name || star.type,
           }));
         setAllStarData(validStars);
         setFilteredData(validStars);
@@ -56,7 +56,7 @@ const RatingDetail: React.FC = () => {
     }
 
     if (filterType !== "") {
-      filtered = filtered.filter(star => StarType[star.type]?.name === filterType);
+      filtered = filtered.filter(star => star.type === filterType);
     }
 
     if (startDate) {
