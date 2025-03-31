@@ -24,7 +24,6 @@ const Dashboard: FC = () => {
       updateDate: string;
     }>,
   });
-  const [filterValue, setFilterValue] = useState("monthly");
   const [currentPage, setCurrentPage] = useState(1);
 
   // 計算中位數
@@ -82,7 +81,6 @@ const Dashboard: FC = () => {
         region: branchArea[branchList[s.branchCode]?.area] || "N/A",
         department: s.branchCode || "N/A",
         stars: supervisorStars[s.id] || 0,
-        updateDate: s.updateDate || new Date().toLocaleDateString("zh-TW", { timeZone: "Asia/Taipei" }),
       }));
 
       // 依星星數排序（由高到低）
@@ -179,18 +177,8 @@ const Dashboard: FC = () => {
               { id: "region", label: "區域", sortable: true },
               { id: "department", label: "分行", sortable: true },
               { id: "stars", label: "星數", sortable: true },
-              { id: "updateDate", label: "更新日期" },
             ]}
             data={dashboardData.supervisorsRank}
-            filter={{
-              options: [
-                { label: "月份", value: "monthly" },
-                { label: "季度", value: "quarterly" },
-                { label: "年度", value: "yearly" },
-              ],
-              value: filterValue,
-              onChange: setFilterValue,
-            }}
             pagination={{
               pageSize: 10,
               currentPage: currentPage,
