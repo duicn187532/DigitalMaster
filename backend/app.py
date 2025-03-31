@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 import os
 from dotenv import load_dotenv
 from mongodb import starCollection, supervisorCollection, classCollection, initCollection
@@ -8,17 +8,29 @@ from bson.objectid import ObjectId
 
 load_dotenv()  # 載入 .env 檔案（若有）
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    static_folder="dist",   # 這是你的 build 資料夾
+    static_url_path="/"                # 根目錄就提供 index.html
+)
 CORS(app)  # 允許所有來源訪問
 
+
+# 靜態首頁：回傳 index.html
+@app.route("/", defaults={"path": ""})
+@app.route("/<path:path>")
+def serve(path):
+    if path != "" and os.path.exists(os.path.join(app.static_folder, path)):
+        return send_from_directory(app.static_folder, path)
+    else:
+        # 如果找不到資源，就回傳 index.html（讓 React Router 接手）
+        return send_from_directory(app.static_folder, "index.html")
 
 # -------------------------------
 # Supervisor CRUD
 # -------------------------------
 
-@app.route("/", methods=["GET"])
-def hello():
-    return "hello world!"
+
 
 # 1. 新增 Supervisor
 @app.route("/supervisors", methods=["POST"])
