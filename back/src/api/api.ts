@@ -1,4 +1,4 @@
-import { AddMasterform, Master, StarForm, AddClassForm } from "../types/common";
+import { AddMasterform, Master, StarForm, AddClassForm, InitInfo } from "../types/common";
 
 export const API = "http://localhost:8080/";
 
@@ -106,4 +106,23 @@ export async function deleteClass(id: string) {
     fetchSupervisors();
   })
   .catch(error => console.error('刪除資料錯誤:', error));
+}
+
+
+export async function fetchInitInfo() {
+  const response = await fetch(`${API}/init`);
+  if (!response.ok) {
+    throw new Error("Failed to fetch init");
+  }
+  return response.json();
+}
+
+export async function updateInitInfo(data: InitInfo) {
+  const response = await fetch(`${API}/init`, {
+    method: "PUT",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data),
+  })
+  console.log("updateInitInfo 回傳:", response);
+  return response;
 }

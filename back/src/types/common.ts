@@ -179,3 +179,7 @@ export interface TableItem {
     stars: number;
   }
   
+export interface InitInfo {
+  surveyUrl: string,
+  surveyStartDay: string,
+}

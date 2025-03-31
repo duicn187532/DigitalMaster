@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify
 import os
 from dotenv import load_dotenv
-from mongodb import starCollection, supervisorCollection, classCollection
+from mongodb import starCollection, supervisorCollection, classCollection, initCollection
 from flask_cors import CORS
 from bson.objectid import ObjectId
 
@@ -221,6 +221,8 @@ def delete_class(class_id):
         return jsonify({"error": "class record not found"}), 404
     return jsonify({"message": "class record deleted"}), 200
 
+INIT_ID = "system_setting"
+
 @app.route("/user-data", methods=["GET"])
 def user_data():
     supervisor_id = request.args.get('supervisor_id')
@@ -228,13 +230,23 @@ def user_data():
     if not supervisor_id:
         return jsonify({"error": "Missing supervisor_id"}), 400
 
+    # Fetch Initial Data 
+    
+    init_info = initCollection.find_one({"_id": INIT_ID})
+    
     # Fetch Supervisor
     supervisor = supervisorCollection.find_one({"id": supervisor_id})
     if supervisor:
         supervisor["_id"] = str(supervisor["_id"])
 
     # Fetch Stars
-    stars = list(starCollection.find({"supervisorId": supervisor_id}))
+    stars = list(starCollection.find({
+        "supervisorId": supervisor_id,
+        "$or": [
+            {"valid": {"$ne": False}},  # 找出 valid 不等於 False 的資料
+            {"valid": {"$exists": False}}  # 找出沒有 valid 欄位的資料
+        ]
+    }))
     for star in stars:
         star["_id"] = str(star["_id"])
 
@@ -247,12 +259,43 @@ def user_data():
     response = {
         "supervisor": supervisor,
         "stars": stars,
-        "classes": classes
+        "classes": classes,
+        "initInfo": init_info,
     }
 
     return jsonify(response), 200
 
 
+# 預設只儲存一筆 init 設定
+
+@app.route("/init", methods=["GET"])
+def get_init_info():
+    data = initCollection.find_one({"_id": INIT_ID})
+    if not data:
+        return jsonify({}), 200
+    data["_id"] = str(data["_id"])  # 移除 _id 若你前端不需要
+    return jsonify(data), 200
+
+@app.route("/init", methods=["PUT"])
+def update_init_info():
+    req_data = request.json
+    if not req_data:
+        return jsonify({"error": "No data provided"}), 400
+
+    # surveyUrl 和 surveyStartDay 應該是 string 格式
+    survey_url = req_data.get("surveyUrl", "")
+    survey_start_day = req_data.get("surveyStartDay", "")
+
+    initCollection.update_one(
+        {"_id": INIT_ID},
+        {"$set": {
+            "surveyUrl": survey_url,
+            "surveyStartDay": survey_start_day
+        }},
+        upsert=True  # 若不存在則新增
+    )
+
+    return jsonify({"message": "Init info updated"}), 200
 
 
 # -------------------------------

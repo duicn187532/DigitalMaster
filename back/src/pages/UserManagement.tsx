@@ -1,23 +1,11 @@
 "use client";
 
 import { FC, useState, useEffect } from "react";
-import {
-  ChevronDown,
-  ChevronUp,
-  MoreVertical,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, MoreVertical, ChevronLeft, ChevronRight, } from "lucide-react";
 import Modal from "../components/Modal";
 import AddMasterModal from "../components/AddMasterModal";
 import EditMasterModal from "../components/EditMasterModal";
-import {
-  fetchSupervisors,
-  fetchStars,
-  deleteSupervisor,
-  addMaster,
-  editSupervisor
-} from "../api/api";
+import { fetchSupervisors, fetchStars, deleteSupervisor, addMaster, editSupervisor, } from "../api/api";
 import { AddMasterform, Master, branchArea, branchList, Star, TableItem } from "../types/common";
 import { useNavigate } from "react-router-dom";
 import { exportToCSV } from "../services/exportReport";
@@ -91,18 +79,6 @@ const UserManagement: FC = () => {
     loadData();
   }, []);
 
-  // 排序資料
-  // const sortedData = [...tableData].sort((a, b) => {
-  //   if (!sortConfig.key || !sortConfig.direction) return 0;
-  //   const key = sortConfig.key;
-  //   let valA = a[key];
-  //   let valB = b[key];
-  //   if (typeof valA === "string") valA = valA.toLowerCase();
-  //   if (typeof valB === "string") valB = valB.toLowerCase();
-  //   if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
-  //   if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
-  //   return 0;
-  // });
 
   useEffect(() => {
     let filtered = tableData;
@@ -130,10 +106,26 @@ const UserManagement: FC = () => {
     if (maxStars !== "") {
       filtered = filtered.filter(item => item.stars <= Number(maxStars));
     }
+
+    // Apply sorting
+    if (sortConfig.key && sortConfig.direction) {
+      filtered = [...filtered].sort((a, b) => {
+        const key = sortConfig.key as keyof TableItem;
+        let valA = a[key];
+        let valB = b[key];
+        
+        if (typeof valA === "string") valA = valA.toLowerCase();
+        if (typeof valB === "string") valB = valB.toLowerCase();
+        
+        if (valA < valB) return sortConfig.direction === "asc" ? -1 : 1;
+        if (valA > valB) return sortConfig.direction === "asc" ? 1 : -1;
+        return 0;
+      });
+    }
   
     setFilteredData(filtered);
     setCurrentPage(1);
-  }, [tableData, filterId, filterName, filterRegion, filterBranch, minStars, maxStars]);
+  }, [tableData, filterId, filterName, filterRegion, filterBranch, minStars, maxStars, sortConfig]);
   
 
   // 分頁計算
@@ -154,7 +146,7 @@ const UserManagement: FC = () => {
     }
     setSortConfig({ key: direction ? columnId : null, direction });
   };
-
+  
   const renderSortIcon = (columnId: keyof TableItem) => {
     if (sortConfig.key !== columnId)
       return <ChevronDown size={16} className="text-gray-300" />;
@@ -363,8 +355,13 @@ const UserManagement: FC = () => {
                         onChange={handleSelectAll}
                       />
                     </th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
-                      行編
+                    <th 
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("id")}
+                    >
+                      <div className="flex items-center">
+                        行編 {renderSortIcon("id")}
+                      </div>
                     </th>
                     <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">
                       達人姓名

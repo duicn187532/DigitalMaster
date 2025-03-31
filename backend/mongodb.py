@@ -15,6 +15,7 @@ db = client["DigitalMaster"]
 supervisorCollection = db["supervisor"]
 starCollection = db["star"]
 classCollection = db["class"]
+initCollection = db["init_info"]
 
 # data = {"id": "01234", "name": "張三", "branchCode": "02"}
 # Send a ping to confirm a successful connection
