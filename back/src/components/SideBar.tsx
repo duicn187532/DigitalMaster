@@ -66,7 +66,7 @@ const Sidebar: FC<SidebarProps> = ({ collapsed, setCollapsed }) => {
           <span
             className={`ml-3 whitespace-nowrap transition-opacity duration-300 ${collapsed ? "opacity-0 w-0" : "opacity-100"}`}
           >
-            名單管理
+            達人管理
           </span>
         </NavLink>
 

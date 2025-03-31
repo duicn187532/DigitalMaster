@@ -176,6 +176,7 @@ export interface TableItem {
     name: string;
     region: string;
     branch: string;
+    branchCode: string;
     stars: number;
   }
   

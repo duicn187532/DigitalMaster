@@ -4,14 +4,9 @@ import React, { useState, useEffect, useCallback, useMemo } from "react";
 import { addClass, deleteClass, fetchClass } from "../api/api";
 import Modal from "../components/Modal";
 import AddClassModal from "../components/AddClassModal";
-import { ClassData, AddClassForm } from "../types/common";
+import { ClassData, AddClassForm, classType } from "../types/common";
 
-// 定義課程類型
-export const classType: Record<string, Record<string, any>> = {
-  "1" : {name: "線上", img: "../assets/attend.png"},
-  "2" : {name: "數位", img: "../assets/interact.png"},
-  "3" : {name: "實體", img: "../assets/cases.png"},
-};
+
 
 const ClassManagement: React.FC = () => {
   const [classData, setClassData] = useState<ClassData[]>([]);
@@ -27,7 +22,7 @@ const ClassManagement: React.FC = () => {
   }), []);
 
   // Memoized load classes function to prevent unnecessary re-renders
-  const loadClasses = useCallback(async () => {
+  const loadClasses = async () => {
     try {
       setIsLoading(true);
       const data = await fetchClass();
@@ -37,49 +32,50 @@ const ClassManagement: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  };
 
   // Use useEffect with the memoized loadClasses function
   useEffect(() => {
     loadClasses();
-  }, [loadClasses]);
+  }, []);
 
-  const handleAddClass = useCallback(() => {
+  const handleAddClass = () => {
     setShowAddClassModal(true);
-  }, []);
+  };
 
-  const handleCloseAddClass = useCallback(() => {
+  const handleCloseAddClass = () => {
     setShowAddClassModal(false);
-  }, []);
+  };
 
-  const handleSaveClass = useCallback(async (formData: AddClassForm) => {
+  const handleSaveClass = async (formData: AddClassForm) => {
     try {
       const newClass = await addClass(formData);
-      setClassData(prev => {
+       setClassData(prev => {
         // Prevent duplicate entries by checking if the class already exists
         const exists = prev.some(cls => cls._id === newClass._id);
         return exists ? prev : [...prev, newClass];
       });
-      handleCloseAddClass();
+       handleCloseAddClass();
+      await loadClasses();
     } catch (error) {
       console.error("新增課程失敗:", error);
       alert("新增課程失敗，請稍後再試");
     }
-  }, [handleCloseAddClass]);
+  };
 
   const handleExport = useCallback(() => {
     alert("匯出資料功能尚未實作");
   }, []);
 
-  const handleEdit = useCallback((id: string) => {
-    alert(`編輯課程 ID: ${id}`);
-  }, []);
+  // const handleEdit = useCallback((id: string) => {
+  //   alert(`編輯課程 ID: ${id}`);
+  // }, []);
 
-  const handleDelete = useCallback((id: string) => {
+  const handleDelete = async (id: string) => {
     if (!confirm("確定要刪除此課程嗎？")) return;
-    deleteClass(id);
-    // 假設從前端刪除即可；實際應呼叫 API
-  }, []);
+    await deleteClass(id);
+    await loadClasses();
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 p-6">
@@ -154,12 +150,12 @@ const ClassManagement: React.FC = () => {
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-700">
                       <div className="flex gap-2">
-                        <button
+                        {/* <button
                           onClick={() => handleEdit(cls._id)}
                           className="px-3 py-1 bg-blue-500 text-white text-xs rounded hover:bg-blue-600 transition-colors"
                         >
                           編輯
-                        </button>
+                        </button> */}
                         <button
                           onClick={() => handleDelete(cls._id)}
                           className="px-3 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600 transition-colors"

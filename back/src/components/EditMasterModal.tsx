@@ -1,7 +1,7 @@
 "use client";
 
 import { FC, useState, FormEvent } from "react";
-import { Master } from "../types/common";
+import { Master, branchList } from "../types/common";
 
 interface EditMasterModalProps {
   masterData: Master;
@@ -13,6 +13,7 @@ const EditMasterModal: FC<EditMasterModalProps> = ({ masterData, onClose, onSave
   // 初始化狀態以 masterData 的值
   const [name, setName] = useState(masterData.name);
   const [branchCode, setBranchCode] = useState(masterData.branchCode || "");
+  const [branchName] = useState(branchList[masterData.branchCode].name);
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
@@ -48,6 +49,16 @@ const EditMasterModal: FC<EditMasterModalProps> = ({ masterData, onClose, onSave
             required
           />
         </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700">分行</label>
+          <input
+            type="text"
+            disabled
+            value={branchName}
+            className="mt-1 block w-full border border-gray-300 rounded p-2"
+          />
+        </div>
+
         <div>
           <label className="block text-sm font-medium text-gray-700">分行</label>
           <input

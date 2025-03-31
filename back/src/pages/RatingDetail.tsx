@@ -84,7 +84,7 @@ const RatingDetail: React.FC = () => {
     try {
         const res = await deleteStar(starId);
         
-        if (!res || !res.ok) {  // 確認 res 是真實存在的物件，且具有 ok 屬性
+        if (!res) {  // 確認 res 是真實存在的物件，且具有 ok 屬性
             throw new Error("更新失敗");
         }
 

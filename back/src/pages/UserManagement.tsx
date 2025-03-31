@@ -31,12 +31,14 @@ const UserManagement: FC = () => {
   const [filterName, setFilterName] = useState("");
   const [filterRegion, setFilterRegion] = useState("");
   const [filterBranch, setFilterBranch] = useState("");
+  const [filterBranchCode] = useState("");
   const [minStars, setMinStars] = useState<number | "">("");
   const [maxStars, setMaxStars] = useState<number | "">("");
 
 
   // 取得資料
   const loadData = async () => {
+    console.log("start load")
     setLoading(true);
     try {
       const [supervisors, stars]: [Master[], Star[]] = await Promise.all([
@@ -61,6 +63,7 @@ const UserManagement: FC = () => {
           name: s.name,
           region: regionName,
           branch: branchInfo.name,
+          branchCode: s.branchCode,
           stars: starSums[s.id] || 0,
         };
       });
@@ -74,7 +77,7 @@ const UserManagement: FC = () => {
       setLoading(false);
     }
   };
-  
+    
   useEffect(() => {
     loadData();
   }, []);
@@ -97,6 +100,10 @@ const UserManagement: FC = () => {
   
     if (filterBranch) {
       filtered = filtered.filter(item => item.branch.includes(filterBranch));
+    }
+
+    if (filterBranchCode) {
+      filtered = filtered.filter(item => item.branch.includes(filterBranchCode));
     }
   
     if (minStars !== "") {
@@ -125,7 +132,7 @@ const UserManagement: FC = () => {
   
     setFilteredData(filtered);
     setCurrentPage(1);
-  }, [tableData, filterId, filterName, filterRegion, filterBranch, minStars, maxStars, sortConfig]);
+  }, [tableData, filterId, filterName, filterRegion, filterBranch, filterBranchCode, minStars, maxStars, sortConfig]);
   
 
   // 分頁計算
@@ -200,7 +207,7 @@ const UserManagement: FC = () => {
     if (!confirm("確定要刪除此主管嗎？")) return;
     try {
       await deleteSupervisor(id);
-      loadData();
+      await loadData();
     } catch (error) {
       console.error("刪除資料錯誤:", error);
       alert("刪除失敗");
@@ -215,8 +222,8 @@ const UserManagement: FC = () => {
   const handleSaveMaster = async (data: AddMasterform) => {
     try {
       await addMaster(data);
-      await loadData();
       setShowAddMasterModal(false);
+      await loadData();
     } catch (err) {
       console.error("新增資料錯誤:", err);
       alert("新增失敗");
@@ -231,15 +238,15 @@ const UserManagement: FC = () => {
 
   const handleEdit = async (updatedMaster: Master) => {
     try {
-      await editSupervisor(updatedMaster.id, updatedMaster);
-      await loadData(); // This will refresh the entire table data
-      setShowEditModal(false);
-    } catch (error) {
+      await editSupervisor(updatedMaster.id, updatedMaster); // 先等後端處理完
+      setShowEditModal(false); // 然後關閉 modal
+      await loadData(); // 再去 reload 資料
+      } catch (error) {
       console.error("編輯資料錯誤:", error);
       alert("編輯失敗");
     }
   };
-  
+    
 
   // 將勾選的 master 傳送到 ratingStar 頁面
   const handleGoToRatingStar = () => {
@@ -384,6 +391,15 @@ const UserManagement: FC = () => {
                     </th>
                     <th
                       className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider cursor-pointer"
+                      onClick={() => handleSort("branchCode")}
+                    >
+                      <div className="flex items-center">
+                        分行代碼 {renderSortIcon("branchCode")}
+                      </div>
+                    </th>
+
+                    <th
+                      className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider cursor-pointer"
                       onClick={() => handleSort("stars")}
                     >
                       <div className="flex items-center">
@@ -410,6 +426,7 @@ const UserManagement: FC = () => {
                       <td className="px-4 py-3 text-sm text-gray-700">{row.name}</td>
                       <td className="px-4 py-3 text-sm text-gray-700">{row.region}</td>
                       <td className="px-4 py-3 text-sm text-gray-700">{row.branch}</td>
+                      <td className="px-4 py-3 text-sm text-gray-700">{row.branchCode}</td>
                       <td className="px-4 py-3 text-sm text-gray-700">{row.stars}</td>
                       <td className="px-4 py-3 text-sm text-gray-700">
                         <div className="flex gap-2">
@@ -419,7 +436,7 @@ const UserManagement: FC = () => {
                               setSelectedMaster({
                                 id: row.id,
                                 name: row.name,
-                                branchCode: row.branch,
+                                branchCode: row.branchCode,
                               });
                               setShowEditModal(true);
                             }}

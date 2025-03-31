@@ -55,6 +55,7 @@ const StarRating: React.FC = () => {
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
+      encoding: "utf-8", // 明確指定 UTF-8 編碼
       complete: async (results) => {
         const starData: StarForm[] = results.data.map((row: any) => {
           const date = row.date

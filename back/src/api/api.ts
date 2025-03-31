@@ -39,28 +39,23 @@ export async function addMaster(data: AddMasterform) {
 }
 
 export async function deleteSupervisor(id: string) {
-  fetch(`${API}/supervisors/${id}`, {
+  const response = await fetch(`${API}/supervisors/${id}`, {
     method: 'DELETE'
   })
-  .then(response => response.json())
-  .then(data => {
-    console.log('刪除成功:', data);
-    fetchSupervisors();
-  })
-  .catch(error => console.error('刪除資料錯誤:', error));
+  const resData = await response.json();
+  console.log("addMaster 回傳:", resData);
+  return resData;
 }
 
 export async function editSupervisor(id: string, data: Master) {
-  fetch(`${API}/supervisors/${id}`, {
+  const response = await fetch(`${API}/supervisors/${id}`, {
     method: 'PUT',
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(data),
   })
-  .then(response => response.json())
-  .then(data => {
-    console.log('更新成功',data);
-    fetchSupervisors();
-  })
+  const resData = await response.json();
+  console.log("addMaster 回傳:", resData);
+  return resData;
 }
 
 export async function addStar(data: Array<StarForm>) {
@@ -82,7 +77,11 @@ export async function deleteStar(id: string) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ valid: false })
   })
-  return response
+  if (!response.ok) {
+    throw new Error("Failed to delete stars");
+  }
+  const resData = response.json()
+  return resData;
 }
 
 export async function addClass(data: AddClassForm) {
@@ -97,15 +96,12 @@ export async function addClass(data: AddClassForm) {
 }
 
 export async function deleteClass(id: string) {
-  fetch(`${API}/class/${id}`, {
+  const response = await fetch(`${API}/class/${id}`, {
     method: 'DELETE'
   })
-  .then(response => response.json())
-  .then(data => {
-    console.log('刪除成功:', data);
-    fetchSupervisors();
-  })
-  .catch(error => console.error('刪除資料錯誤:', error));
+  const resData = await response.json();
+  console.log("deleteClass 回傳:", resData);
+  return resData;
 }
 
 
