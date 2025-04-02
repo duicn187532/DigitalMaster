@@ -61,7 +61,7 @@ def get_all_master():
     masters = list(masterCollection.find())
     for master in masters:
         master["_id"] = str(master["_id"])
-    return jsonify(master), 200
+    return jsonify(masters), 200
 
 
 # 3. 取得單一 master
