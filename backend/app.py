@@ -1,7 +1,7 @@
 from flask import Flask, request, jsonify, send_from_directory
 import os
 from dotenv import load_dotenv
-from mongodb import starCollection, supervisorCollection, classCollection, initCollection
+from mongodb import starCollection, masterCollection, classCollection, initCollection
 from flask_cors import CORS
 from bson.objectid import ObjectId
 
@@ -27,14 +27,14 @@ def serve(path):
         return send_from_directory(app.static_folder, "index.html")
 
 # -------------------------------
-# Supervisor CRUD
+# master CRUD
 # -------------------------------
 
 
 
-# 1. 新增 Supervisor
-@app.route("/supervisors", methods=["POST"])
-def create_supervisor():
+# 1. 新增 master
+@app.route("/master", methods=["POST"])
+def create_master():
     data = request.json
     if not data:
         return jsonify({"error": "No data provided"}), 400
@@ -46,61 +46,61 @@ def create_supervisor():
             return jsonify({"error": f"Missing field: {field}"}), 400
 
     # 插入資料
-    result = supervisorCollection.insert_one({
+    result = masterCollection.insert_one({
         "id": data["id"],
         "name": data["name"],
         "branchCode": data["branchCode"]
     })
 
-    return jsonify({"message": "Supervisor created", "inserted_id": str(result.inserted_id)}), 201
+    return jsonify({"message": "master created", "inserted_id": str(result.inserted_id)}), 201
 
 
-# 2. 取得所有 Supervisor
-@app.route("/supervisors", methods=["GET"])
-def get_all_supervisors():
-    supervisors = list(supervisorCollection.find())
-    for supervisor in supervisors:
-        supervisor["_id"] = str(supervisor["_id"])
-    return jsonify(supervisors), 200
+# 2. 取得所有 master
+@app.route("/master", methods=["GET"])
+def get_all_master():
+    masters = list(masterCollection.find())
+    for master in masters:
+        master["_id"] = str(master["_id"])
+    return jsonify(master), 200
 
 
-# 3. 取得單一 Supervisor
-@app.route("/supervisors/<supervisor_id>", methods=["GET"])
-def get_supervisor(supervisor_id):
-    supervisor = supervisorCollection.find_one({"id": supervisor_id})
-    if not supervisor:
-        return jsonify({"error": "Supervisor not found"}), 404
+# 3. 取得單一 master
+@app.route("/master/<master_id>", methods=["GET"])
+def get_master(master_id):
+    master = masterCollection.find_one({"id": master_id})
+    if not master:
+        return jsonify({"error": "master not found"}), 404
 
-    supervisor["_id"] = str(supervisor["_id"])
-    return jsonify(supervisor), 200
+    master["_id"] = str(master["_id"])
+    return jsonify(master), 200
 
 
-# 4. 更新 Supervisor
-@app.route("/supervisors/<supervisor_id>", methods=["PUT"])
-def update_supervisor(supervisor_id):
+# 4. 更新 master
+@app.route("/master/<master_id>", methods=["PUT"])
+def update_master(master_id):
     data = request.json
     if not data:
         return jsonify({"error": "No data provided"}), 400
     print(data)
     # 更新
-    result = supervisorCollection.update_one(
-        {"id": supervisor_id},
+    result = masterCollection.update_one(
+        {"id": master_id},
         {"$set": data}
     )
 
     if result.matched_count == 0:
-        return jsonify({"error": "Supervisor not found"}), 404
+        return jsonify({"error": "master not found"}), 404
 
-    return jsonify({"message": "Supervisor updated"}), 200
+    return jsonify({"message": "master updated"}), 200
 
 
-# 5. 刪除 Supervisor
-@app.route("/supervisors/<supervisor_id>", methods=["DELETE"])
-def delete_supervisor(supervisor_id):
-    result = supervisorCollection.delete_one({"id": supervisor_id})
+# 5. 刪除 master
+@app.route("/master/<master_id>", methods=["DELETE"])
+def delete_master(master_id):
+    result = masterCollection.delete_one({"id": master_id})
     if result.deleted_count == 0:
-        return jsonify({"error": "Supervisor not found"}), 404
-    return jsonify({"message": "Supervisor deleted"}), 200
+        return jsonify({"error": "master not found"}), 404
+    return jsonify({"message": "master deleted"}), 200
 
 
 # -------------------------------
@@ -126,7 +126,7 @@ def create_star():
         reqData = [reqData]
     
     # 檢查每筆資料是否包含必要欄位
-    required_fields = ["supervisorId", "score", "type", "date"]
+    required_fields = ["masterId", "score", "type", "date"]
     for data in reqData:
         for field in required_fields:
             if field not in data:
@@ -134,7 +134,7 @@ def create_star():
 
     # 整理資料
     docs = [{
-        "supervisorId": data["supervisorId"],
+        "masterId": data["masterId"],
         "score": data["score"],
         "type": data["type"],
         "date": data["date"],
@@ -149,10 +149,10 @@ def create_star():
         "inserted_ids": [str(_id) for _id in result.inserted_ids]
     }), 201
 
-# 2. 依照 supervisorId 取得星星紀錄
-@app.route("/stars/<supervisor_id>", methods=["GET"])
-def get_stars_for_supervisor(supervisor_id):
-    stars = list(starCollection.find({"supervisorId": supervisor_id}))
+# 2. 依照 masterId 取得星星紀錄
+@app.route("/stars/<master_id>", methods=["GET"])
+def get_stars_for_master(master_id):
+    stars = list(starCollection.find({"masterId": master_id}))
     for star in stars:
         star["_id"] = str(star["_id"])
     return jsonify(stars), 200
@@ -237,23 +237,23 @@ INIT_ID = "system_setting"
 
 @app.route("/user-data", methods=["GET"])
 def user_data():
-    supervisor_id = request.args.get('supervisor_id')
+    master_id = request.args.get('master_id')
 
-    if not supervisor_id:
-        return jsonify({"error": "Missing supervisor_id"}), 400
+    if not master_id:
+        return jsonify({"error": "Missing master_id"}), 400
 
     # Fetch Initial Data 
     
     init_info = initCollection.find_one({"_id": INIT_ID})
     
-    # Fetch Supervisor
-    supervisor = supervisorCollection.find_one({"id": supervisor_id})
-    if supervisor:
-        supervisor["_id"] = str(supervisor["_id"])
+    # Fetch master
+    master = masterCollection.find_one({"id": master_id})
+    if master:
+        master["_id"] = str(master["_id"])
 
     # Fetch Stars
     stars = list(starCollection.find({
-        "supervisorId": supervisor_id,
+        "masterId": master_id,
         "$or": [
             {"valid": {"$ne": False}},  # 找出 valid 不等於 False 的資料
             {"valid": {"$exists": False}}  # 找出沒有 valid 欄位的資料
@@ -269,7 +269,7 @@ def user_data():
 
     # Return combined data
     response = {
-        "supervisor": supervisor,
+        "master": master,
         "stars": stars,
         "classes": classes,
         "initInfo": init_info,

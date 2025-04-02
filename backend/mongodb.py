@@ -12,7 +12,7 @@ mongo_uri = os.getenv("MONGO_URI")
 # Create a new client and connect to the server
 client = MongoClient(mongo_uri)
 db = client["DigitalMaster"]
-supervisorCollection = db["supervisor"]
+masterCollection = db["master"]
 starCollection = db["star"]
 classCollection = db["class"]
 initCollection = db["init_info"]
@@ -20,8 +20,8 @@ initCollection = db["init_info"]
 # data = {"id": "01234", "name": "張三", "branchCode": "02"}
 # Send a ping to confirm a successful connection
 # try:
-#     # supervisor.insert_one(data)
-#     result = supervisor.find()
+#     # master.insert_one(data)
+#     result = master.find()
 #     for i in result:
 #         print(i)
 #     print("Pinged your deployment. You successfully connected to MongoDB!")
