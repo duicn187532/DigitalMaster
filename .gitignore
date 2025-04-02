@@ -35,3 +35,5 @@ front/
 
 # 忽略 user_backend 資料夾
 user_backend/
+
+back/
