@@ -215,13 +215,7 @@ def create_class():
             return jsonify({"error": f"Missing field: {field}"}), 400
     if type(reqData) == dict:
         # 插入資料
-        result = classCollection.insert_one({
-            "date": reqData["date"],
-            "startTime": reqData["startTime"],
-            "endTime": reqData["endTime"],
-            "name": reqData["name"],
-            "type": reqData["type"],
-        })
+        result = classCollection.insert_one(reqData)
     else: return jsonify({"error : type error"}), 400
 
     return jsonify({"message": "Class record created", "inserted_id": str(result.inserted_id)}), 201
