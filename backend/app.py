@@ -40,17 +40,13 @@ def create_master():
         return jsonify({"error": "No data provided"}), 400
 
     # 必要欄位檢查
-    required_fields = ["id", "name", "branchCode"]
+    required_fields = ["id", "account", "name", "branchCode"]
     for field in required_fields:
         if field not in data:
             return jsonify({"error": f"Missing field: {field}"}), 400
 
     # 插入資料
-    result = masterCollection.insert_one({
-        "id": data["id"],
-        "name": data["name"],
-        "branchCode": data["branchCode"]
-    })
+    result = masterCollection.insert_one(data)
 
     return jsonify({"message": "master created", "inserted_id": str(result.inserted_id)}), 201
 
