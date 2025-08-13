@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify, send_from_directory
 import os
 from dotenv import load_dotenv
 from mongodb import starCollection, masterCollection, classCollection, initCollection
+from pymongo.errors import PyMongoError
 from flask_cors import CORS
 from bson.objectid import ObjectId
 
@@ -225,46 +226,66 @@ def delete_class(class_id):
 
 INIT_ID = "system_setting"
 
+@app.errorhandler(500)
+def handle_500(e):
+    app.logger.exception("Internal server error")
+    return jsonify({"error": "Internal server error"}), 500
+
 @app.route("/user-data", methods=["GET"])
 def user_data():
-    master_id = request.args.get('master_id')
+    account = request.args.get('account', type=str)
+    if not account:
+        return jsonify({"error": "Missing required parameter: account"}), 400
 
-    if not master_id:
-        return jsonify({"error": "Missing master_id"}), 400
+    try:
+        # 1. 讀取 init 資訊
+        init_info = initCollection.find_one({"_id": INIT_ID})
+        if not init_info:
+            app.logger.error("Init info not found for INIT_ID=%s", INIT_ID)
+            return jsonify({"error": "Initialization data not found"}), 500
 
-    # Fetch Initial Data 
-    
-    init_info = initCollection.find_one({"_id": INIT_ID})
-    
-    # Fetch master
-    master = masterCollection.find_one({"id": master_id})
-    if master:
+        # 2. 讀取 master
+        master = masterCollection.find_one({"account": account})
+        if not master:
+            return jsonify({"error": f"Master not found for account '{account}'"}), 404
         master["_id"] = str(master["_id"])
 
-    # Fetch Stars
-    stars = list(starCollection.find({
-        "masterId": master_id,
-        "$or": [
-            {"valid": {"$ne": False}},  # 找出 valid 不等於 False 的資料
-            {"valid": {"$exists": False}}  # 找出沒有 valid 欄位的資料
-        ]
-    }))
-    for star in stars:
-        star["_id"] = str(star["_id"])
+        # 3. 讀取 stars
+        stars = list(starCollection.find({
+            "masterId": master["id"],
+            "$or": [
+                {"valid": {"$ne": False}},
+                {"valid": {"$exists": False}}
+            ]
+        }))
+        for star in stars:
+            star["_id"] = str(star["_id"])
 
-    # Fetch Classes
-    classes = list(classCollection.find())
-    for cls in classes:
-        cls["_id"] = str(cls["_id"])
+        # 4. 讀取 classes
+        classes = list(classCollection.find())
+        for cls in classes:
+            cls["_id"] = str(cls["_id"])
 
-    # Return combined data
+    except PyMongoError as e:
+        # 資料庫存取錯誤
+        app.logger.exception("Database error")
+        return jsonify({"error": "Database error"}), 500
+    except KeyError as e:
+        # master["id"] 等欄位不存在
+        app.logger.exception("Data format error: missing key %s", e)
+        return jsonify({"error": "Data format error"}), 500
+    except Exception as e:
+        # 其他未預期錯誤
+        app.logger.exception("Unexpected error")
+        return jsonify({"error": "Unexpected error"}), 500
+
+    # 組裝並回傳
     response = {
         "master": master,
         "stars": stars,
         "classes": classes,
         "initInfo": init_info,
     }
-
     return jsonify(response), 200
 
 
