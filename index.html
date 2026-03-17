@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <title>數位達人</title>
+    <script type="text/javascript">
+      // GitHub Pages 單頁應用路由重定向腳本
+      (function(l) {
+        if (l.search[1] === '/') {
+          var decoded = l.search.slice(1).split('&').map(function(s) { 
+            return s.replace(/~and~/g, '&')
+          }).join('?');
+          window.history.replaceState(null, null,
+              l.pathname.slice(0, -1) + decoded + l.hash
+          );
+        }
+      }(window.location))
+    </script>
+    <!-- 404.html 的腳本也需要添加在這裡 -->
+    <script type="text/javascript">
+      // 處理 GitHub Pages 的 404 重定向
+      (function() {
+        var redirect = sessionStorage.redirect;
+        delete sessionStorage.redirect;
+        if (redirect && redirect != location.href) {
+          history.replaceState(null, null, redirect);
+        }
+      })();
+    </script>
+  </head>
+  <body>
+    <div 
+      id="root" 
+      class="flex flex-col justify-center min-h-screen"
+      style="background: linear-gradient(to bottom, #fffbce 0%, #fbf5b1 5%, #ffffff 100%)"
+    ></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
