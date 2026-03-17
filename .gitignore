@@ -17,13 +17,6 @@ dist-ssr
 !.vscode/extensions.json
 .idea
 .DS_Store
-<<<<<<< HEAD
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-=======
 
 # 忽略 Windows 系統自動生成的檔案
 Thumbs.db
@@ -31,4 +24,3 @@ Thumbs.db
 # 忽略某些依賴或臨時檔案
 package-lock.json
 yarn.lock
->>>>>>> 50cdca42214e65afc270fb769fe419e456f3b674
