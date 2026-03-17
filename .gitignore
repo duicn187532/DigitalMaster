@@ -29,11 +29,3 @@ Thumbs.db
 # 忽略某些依賴或臨時檔案
 package-lock.json
 yarn.lock
-
-# 忽略 front 資料夾
-front/
-
-# 忽略 user_backend 資料夾
-user_backend/
-
-back/
