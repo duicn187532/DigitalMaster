@@ -1,8 +1,9 @@
 
+import os
 from pymongo.mongo_client import MongoClient
 # from pymongo.server_api import ServerApi
 
-uri = "mongodb+srv://root:scsbd200@digitalmaster.kwklubl.mongodb.net/?retryWrites=true&w=majority&appName=digitalMaster"
+uri = os.environ["MONGODB_URI"]  # 連線字串改由環境變數提供，勿寫死在程式碼
 
 # Create a new client and connect to the server
 client = MongoClient(uri)
